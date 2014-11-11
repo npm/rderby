@@ -1,6 +1,6 @@
 # RDerby
 
-Rolling restarts using HAProxy, ndm, and some elbow grease.
+rolling restarts using HAProxy, ndm, and some elbow grease.
 
 ## Usage
 
