@@ -47,7 +47,7 @@ RDerby.prototype.roll = function() {
       }
     ], function(err) {
       if (err) {
-        console.log(err);
+        console.error(err);
         process.exit(1);
       } else {
         console.log('rolled', service);
@@ -88,7 +88,7 @@ RDerby.prototype._removeFromHAProxy = function(name, cb) {
 
   haproxy.disable(this.backend, name, function(err) {
     if (err) {
-      console.log(err);
+      console.error(err);
       process.exit(1);
     } else return cb();
   });
@@ -102,7 +102,7 @@ RDerby.prototype._addToHAProxy = function(name, cb) {
 
   haproxy.enable(this.backend, name, function(err) {
     if (err) {
-      console.log(err);
+      console.error(err);
       process.exit(1);
     } else return cb();
   });
@@ -121,15 +121,15 @@ RDerby.prototype._waitFor200 = function(port, cb) {
       url: 'http://127.0.0.1:' + port + _this.healthCheck,
       json: true
     }, function (err, resp, body) {
-      if (resp.statusCode === 200) {
+      if (resp && resp.statusCode === 200) {
         clearInterval(id);
         return cb();
-      } else console.log('received status', resp.statusCode, 'connecting to', port);
+      } else console.log('received status', resp ? resp.statusCode : 0, 'connecting to', port);
     });
 
     // explode if we hit max retries.
     if ( (retries++) > _this.maxRetries) {
-      console.log('hit max retries connecting to', port);
+      console.error('hit max retries connecting to', port);
       process.exit(1);
     }
   }, this.interval);

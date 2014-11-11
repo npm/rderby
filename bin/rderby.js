@@ -18,6 +18,7 @@ var RDerby = require('../index'),
       command: function(arguments) {
         new RDerby({
           healthCheck: arguments.healthCheck,
+          backend: arguments.backend,
           services: arguments._.slice(1)
         }).roll();
       }
