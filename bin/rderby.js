@@ -5,7 +5,7 @@ var RDerby = require('../index'),
     .options('b', {
       alias: 'backend',
       description: 'HAProxy backend',
-      default: 'backends'
+      default: 'back'
     })
     .options('h', {
       alias: 'health-check',
