@@ -10,7 +10,7 @@ var RDerby = require('../index'),
     .options('h', {
       alias: 'health-check',
       description: 'health check endpoint',
-      default: '/_monitor/ping'
+      default: '/_monitor/status'
     });
   commands = {
     'roll': {

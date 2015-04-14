@@ -30,17 +30,19 @@ RDerby.prototype.roll = function() {
   async.eachLimit(this.services, 1, function(service, cb) {
     var splitService = service.split(':'),
       name = splitService[0],
-      port = splitService[1];
+      port = splitService[1],
+      restartTime;
 
     async.series([
       function(done) {
         _this._removeFromHAProxy(name, done);
       },
       function(done) {
+        restartTime = Date.now();
         _this._restartService(name, done);
       },
       function(done) {
-        _this._waitFor200(port, done);
+        _this._waitFor200(port, restartTime, done);
       },
       function(done) {
         _this._addToHAProxy(name, done);
@@ -108,8 +110,9 @@ RDerby.prototype._addToHAProxy = function(name, cb) {
   });
 };
 
-// wait for the ping endpoint to start serving 200s.
-RDerby.prototype._waitFor200 = function(port, cb) {
+// wait for the ping/status endpoint to start serving 200s.
+// if uptime is present in the response, warn if it's unreasonably large.
+RDerby.prototype._waitFor200 = function(port, restartTime, cb) {
   var _this = this,
     id = null,
     retries = 0;
@@ -123,6 +126,15 @@ RDerby.prototype._waitFor200 = function(port, cb) {
     }, function (err, resp, body) {
       if (resp && resp.statusCode === 200) {
         clearInterval(id);
+
+        if (body && typeof body.uptime === 'number') {
+          var maxUptime = (Date.now() - restartTime) / 1000;
+          if (body.uptime > maxUptime * 1.5) {
+            console.warn('worrying process uptime (' + body.uptime + ' s), we ' +
+                         'restarted the process ' + maxUptime + ' s');
+          }
+        }
+
         return cb();
       } else console.log('received status', resp ? resp.statusCode : 0, 'connecting to', port);
     });
